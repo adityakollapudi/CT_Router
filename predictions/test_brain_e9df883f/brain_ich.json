@@ -1,0 +1,100 @@
+{
+  "model": "se_resnext101_32x4d",
+  "target_class": "any",
+  "target_score": -2.6756651401519775,
+  "probabilities": {
+    "any": 0.06442466378211975,
+    "epidural": 0.002398769138380885,
+    "intraparenchymal": 0.02824748121201992,
+    "intraventricular": 0.015110965818166733,
+    "subarachnoid": 0.03348877653479576,
+    "subdural": 0.0166018009185791
+  },
+  "mode": "gradcam",
+  "crop_box_xywh": [
+    25,
+    25,
+    200,
+    200
+  ],
+  "layers": [
+    {
+      "layer": "layer1",
+      "activation_shape": [
+        1,
+        256,
+        64,
+        64
+      ],
+      "gradient_shape": [
+        1,
+        256,
+        64,
+        64
+      ],
+      "gradient_energy": 0.00032141018891707063,
+      "activation_energy": 0.4031883776187897,
+      "cam_max": 1.0
+    },
+    {
+      "layer": "layer2",
+      "activation_shape": [
+        1,
+        512,
+        32,
+        32
+      ],
+      "gradient_shape": [
+        1,
+        512,
+        32,
+        32
+      ],
+      "gradient_energy": 0.0005357250338420272,
+      "activation_energy": 0.1757129728794098,
+      "cam_max": 1.0
+    },
+    {
+      "layer": "layer3",
+      "activation_shape": [
+        1,
+        1024,
+        16,
+        16
+      ],
+      "gradient_shape": [
+        1,
+        1024,
+        16,
+        16
+      ],
+      "gradient_energy": 0.00040482101030647755,
+      "activation_energy": 0.047313980758190155,
+      "cam_max": 1.0
+    },
+    {
+      "layer": "layer4",
+      "activation_shape": [
+        1,
+        2048,
+        8,
+        8
+      ],
+      "gradient_shape": [
+        1,
+        2048,
+        8,
+        8
+      ],
+      "gradient_energy": 0.0003471026720944792,
+      "activation_energy": 0.03800507262349129,
+      "cam_max": 1.0
+    }
+  ],
+  "outputs": {
+    "dashboard": "C:\\Users\\adity\\Downloads\\ct_anatomy_router_output\\predictions\\test_brain_e9df883f\\brain_ich_dashboard.png",
+    "heatmap": "C:\\Users\\adity\\Downloads\\ct_anatomy_router_output\\predictions\\test_brain_e9df883f\\brain_ich_heatmap.png",
+    "overlay": "C:\\Users\\adity\\Downloads\\ct_anatomy_router_output\\predictions\\test_brain_e9df883f\\brain_ich_overlay.png",
+    "layer_grid": "C:\\Users\\adity\\Downloads\\ct_anatomy_router_output\\predictions\\test_brain_e9df883f\\brain_ich_layers.png"
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "image_path": "C:\\Users\\adity\\Downloads\\ct_anatomy_router_output\\samples\\test_chest.png",
+  "router": {
+    "prediction": "CHEST_CT",
+    "confidence": 1.0,
+    "confidence_pct": "100.00%",
+    "probabilities": {
+      "CHEST_CT": 1.0,
+      "BRAIN_CT": 0.0
+    },
+    "status": "ROUTED",
+    "uncertain": 0,
+    "image_path": "C:\\Users\\adity\\Downloads\\ct_anatomy_router_output\\samples\\test_chest.png"
+  },
+  "routing_action": "Dispatched to Chest CT Expert (COVID-19 / Pneumonia Detection)",
+  "expert_result": {
+    "expert": "Chest CT Expert (COVID-19 / Pneumonia Detection)",
+    "status": "SUCCESS",
+    "diagnosis": "COVID-19",
+    "confidence": 0.9928,
+    "confidence_pct": "99.28%",
+    "top1_margin_pct": "98.57%",
+    "entropy": 0.0427,
+    "crop_source": "patient body contour (couch excluded)",
+    "probabilities": {
+      "Normal": 2.8e-05,
+      "Pneumonia": 0.007128,
+      "COVID-19": 0.992844
+    },
+    "raw_probs": [
+      2.819600013026502e-05,
+      0.007127855904400349,
+      0.9928439259529114
+    ],
+    "class_names": [
+      "Normal",
+      "Pneumonia",
+      "COVID-19"
+    ],
+    "clinical_summary": "Features consistent with viral pneumonia / COVID-19 pattern.",
+    "image_path": "C:\\Users\\adity\\Downloads\\ct_anatomy_router_output\\samples\\test_chest.png"
+  },
+  "latency_seconds": 0.072,
+  "gradcam_files": {
+    "overlay": "C:\\Users\\adity\\Downloads\\ct_anatomy_router_output\\predictions\\test_chest_4b5c0f79\\chest_gradcam_overlay.png",
+    "heatmap": "C:\\Users\\adity\\Downloads\\ct_anatomy_router_output\\predictions\\test_chest_4b5c0f79\\chest_gradcam_heatmap.png",
+    "multilayer_grid": "C:\\Users\\adity\\Downloads\\ct_anatomy_router_output\\predictions\\test_chest_4b5c0f79\\chest_gradcam_multilayer_grid.png",
+    "layer_stage_2__low": "C:\\Users\\adity\\Downloads\\ct_anatomy_router_output\\predictions\\test_chest_4b5c0f79\\chest_layer_stage_2__low.png",
+    "layer_stage_4__mid": "C:\\Users\\adity\\Downloads\\ct_anatomy_router_output\\predictions\\test_chest_4b5c0f79\\chest_layer_stage_4__mid.png",
+    "layer_stage_6__deep": "C:\\Users\\adity\\Downloads\\ct_anatomy_router_output\\predictions\\test_chest_4b5c0f79\\chest_layer_stage_6__deep.png",
+    "layer_stage_8__top": "C:\\Users\\adity\\Downloads\\ct_anatomy_router_output\\predictions\\test_chest_4b5c0f79\\chest_layer_stage_8__top.png"
+  },
+  "gradcam_layer_weights": {
+    "stage_2 (low)": 24.07,
+    "stage_4 (mid)": 34.52,
+    "stage_6 (deep)": 31.18,
+    "stage_8 (top)": 10.23
+  },
+  "is_multi_layer": 1
+}

@@ -1,0 +1,47 @@
+{
+  "image_path": "C:\\Users\\adity\\Downloads\\ANN project\\Covid19-CT-Scan--Detection\\COVID-In_lung_CT_2_GettyImages-1224759498.jpg",
+  "router": {
+    "prediction": "CHEST_CT",
+    "confidence": 1.0,
+    "confidence_pct": "100.00%",
+    "probabilities": {
+      "CHEST_CT": 1.0,
+      "BRAIN_CT": 0.0
+    },
+    "status": "ROUTED",
+    "uncertain": 0,
+    "image_path": "C:\\Users\\adity\\Downloads\\ANN project\\Covid19-CT-Scan--Detection\\COVID-In_lung_CT_2_GettyImages-1224759498.jpg"
+  },
+  "routing_action": "Dispatched to Chest CT Expert (COVID-19 / Pneumonia Detection)",
+  "expert_result": {
+    "expert": "Chest CT Expert (COVID-19 / Pneumonia Detection)",
+    "status": "SUCCESS",
+    "diagnosis": "COVID-19",
+    "confidence": 0.7092,
+    "confidence_pct": "70.92%",
+    "top1_margin_pct": "42.23%",
+    "entropy": 0.6239,
+    "crop_source": "patient body contour (couch excluded)",
+    "probabilities": {
+      "Normal": 0.003981,
+      "Pneumonia": 0.286856,
+      "COVID-19": 0.709163
+    },
+    "raw_probs": [
+      0.003981477580964565,
+      0.28685563802719116,
+      0.7091628313064575
+    ],
+    "class_names": [
+      "Normal",
+      "Pneumonia",
+      "COVID-19"
+    ],
+    "clinical_summary": "Features consistent with viral pneumonia / COVID-19 pattern.",
+    "image_path": "C:\\Users\\adity\\Downloads\\ANN project\\Covid19-CT-Scan--Detection\\COVID-In_lung_CT_2_GettyImages-1224759498.jpg"
+  },
+  "latency_seconds": 0.085,
+  "gradcam_files": {
+    "overlay": "C:\\Users\\adity\\Downloads\\ct_anatomy_router_output\\predictions\\COVID-In_lung_CT_2_74bea1e6\\chest_overlay.png"
+  }
+}

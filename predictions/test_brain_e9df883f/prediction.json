@@ -1,0 +1,64 @@
+{
+  "image_path": "C:\\Users\\adity\\Downloads\\ct_anatomy_router_output\\samples\\test_brain.png",
+  "router": {
+    "prediction": "BRAIN_CT",
+    "confidence": 0.9955,
+    "confidence_pct": "99.55%",
+    "probabilities": {
+      "CHEST_CT": 0.004475,
+      "BRAIN_CT": 0.995525
+    },
+    "status": "ROUTED",
+    "uncertain": 0,
+    "image_path": "C:\\Users\\adity\\Downloads\\ct_anatomy_router_output\\samples\\test_brain.png"
+  },
+  "routing_action": "Dispatched to Brain CT Expert (Intracranial Hemorrhage Detection)",
+  "expert_result": {
+    "expert": "Brain CT Expert (Intracranial Hemorrhage Detection)",
+    "status": "SUCCESS",
+    "model_name": "se_resnext101_32x4d",
+    "diagnosis": "No Acute Intracranial Hemorrhage Detected",
+    "diag_title": "[ SAFE ] - Brain is Safe / No Hemorrhage Detected  |  Normal Confidence: 88.44%",
+    "is_safe": 1,
+    "overall_risk": 0.1156,
+    "overall_risk_pct": "11.56%",
+    "target_class": "intraparenchymal",
+    "confidence": 0.8844,
+    "confidence_pct": "88.44%",
+    "probabilities": {
+      "any": 0.115573,
+      "epidural": 0.002527,
+      "intraparenchymal": 0.038117,
+      "intraventricular": 0.019111,
+      "subarachnoid": 0.035396,
+      "subdural": 0.030758
+    },
+    "raw_probs": [
+      0.11557263880968094,
+      0.0025270080659538507,
+      0.03811710700392723,
+      0.019111329689621925,
+      0.03539586067199707,
+      0.030758222565054893
+    ],
+    "clinical_summary": "Scan demonstrates no significant evidence of acute intracranial hemorrhage.",
+    "image_path": "C:\\Users\\adity\\Downloads\\ct_anatomy_router_output\\samples\\test_brain.png"
+  },
+  "latency_seconds": 13.608,
+  "gradcam_files": {
+    "overlay": "C:\\Users\\adity\\Downloads\\ct_anatomy_router_output\\predictions\\test_brain_e9df883f\\brain_gradcam_overlay.png",
+    "heatmap": "C:\\Users\\adity\\Downloads\\ct_anatomy_router_output\\predictions\\test_brain_e9df883f\\brain_gradcam_heatmap.png",
+    "multilayer_grid": "C:\\Users\\adity\\Downloads\\ct_anatomy_router_output\\predictions\\test_brain_e9df883f\\brain_gradcam_multilayer_grid.png",
+    "layer_res_stage1__low": "C:\\Users\\adity\\Downloads\\ct_anatomy_router_output\\predictions\\test_brain_e9df883f\\brain_layer_res_stage1__low.png",
+    "layer_res_stage2__mid": "C:\\Users\\adity\\Downloads\\ct_anatomy_router_output\\predictions\\test_brain_e9df883f\\brain_layer_res_stage2__mid.png",
+    "layer_res_stage3__deep": "C:\\Users\\adity\\Downloads\\ct_anatomy_router_output\\predictions\\test_brain_e9df883f\\brain_layer_res_stage3__deep.png",
+    "layer_res_stage4__top": "C:\\Users\\adity\\Downloads\\ct_anatomy_router_output\\predictions\\test_brain_e9df883f\\brain_layer_res_stage4__top.png"
+  },
+  "gradcam_layer_weights": {
+    "res_stage1 (low)": 38.47,
+    "res_stage2 (mid)": 33.03,
+    "res_stage3 (deep)": 15.73,
+    "res_stage4 (top)": 12.77
+  },
+  "is_multi_layer": 1
+}
