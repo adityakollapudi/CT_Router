@@ -1,18 +1,21 @@
 #!/usr/bin/env python
-"""Global Entry Point: Medical CT Multi-Model Triage Pipeline.
+"""predict.py: Unified CLI & GUI diagnostic triage entrypoint with multi-layer Grad-CAM.
 
-Running this file launches the interactive GUI Window or CLI text mode.
+Runs end-to-end pipeline analysis:
+    Stage 1: CT Anatomy Router (EfficientNet-B0) -> BRAIN_CT vs CHEST_CT
+    Stage 2: Specialist Expert:
+             - Chest Expert: Normal / Pneumonia / COVID-19 classification
+             - Brain Expert: 6 Acute Intracranial Hemorrhage subtype classification
+    Explainability: Multi-layer gradient extraction with native coordinate reprojection
 
 Usage:
     # Interactive GUI window (default)
     python predict.py
     python predict.py --image test_brain.png
 
-    # Pure console / CLI mode without GUI window
+    # CLI mode
     python predict.py --cli --image test_brain.png
-    python predict.py --cli --image test_chest.png --no-gradcam
-
-Outputs formatted console reports, prediction.json and Grad-CAM heatmaps.
+    python predict.py --cli --image test_chest.png
 """
 import argparse
 import sys
