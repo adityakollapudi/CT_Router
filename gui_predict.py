@@ -1,10 +1,11 @@
 #!/usr/bin/env python
-"""Global Entry Point: Medical CT Multi-Model Triage GUI Dashboard Window.
+"""gui_predict.py: Interactive Tkinter GUI diagnostic dashboard for clinical CT decision support.
 
-Stage 1: CT Anatomy Router (EfficientNet-B0) -> Brain CT vs Chest CT
-Stage 2: Downstream Specialist Expert:
-         - Chest Expert (COVID-19 / Pneumonia Detection)
-         - Brain Expert (Intracranial Hemorrhage Detection with Multi-Layer Grad-CAM)
+Features:
+    - Dual-panel canvas: Original axial CT slice and explainable Grad-CAM heatmaps
+    - View Mode Switcher: Fused Multi-Layer Overlay vs. 6-panel Multi-Layer Grid
+    - Automated triage: CT Anatomy Router -> Specialized Chest/Brain Expert Networks
+    - Real-time confidence bars, latency tracking, and structured artifact export
 
 Usage:
     python gui_predict.py
