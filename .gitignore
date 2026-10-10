@@ -1,3 +1,4 @@
+# Git ignore configuration: exclude prediction outputs, Python bytecode, and virtual environments
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
