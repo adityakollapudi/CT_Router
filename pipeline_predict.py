@@ -1,7 +1,8 @@
 #!/usr/bin/env python
-"""Medical CT Multi-Model Triage Pipeline - Backward-Compatible Entrypoint.
+"""pipeline_predict.py: Backward-compatible forwarding pipeline prediction script.
 
-Forwards directly to predict.py.
+Maintains seamless compatibility with existing scripts and CLI invocations by
+forwarding arguments directly to predict.py.
 """
 from predict import main
 
