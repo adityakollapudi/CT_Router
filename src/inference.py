@@ -198,39 +198,54 @@ class MedicalCTPredictor:
             # ---------------- Multi-Layer Grad-CAM for Chest CT ----------------
             if anatomy == "CHEST_CT" and self.pipeline.chest_expert.is_loaded:
                 chest_model = self.pipeline.chest_expert.model
-                feats = chest_model.backbone.features
-                if multi_layer:
-                    # Hook 4 hierarchical stages across depth (shallow to deep)
-                    hook_layers = [
-                        ("stage_2 (low)", feats[2]),
-                        ("stage_4 (mid)", feats[4]),
-                        ("stage_6 (deep)", feats[6]),
-                        ("stage_8 (top)", feats[8]),
-                    ]
-                else:
-                    hook_layers = [("stage_8 (top)", feats[8])]
-
-                x_tensor = self.pipeline.chest_expert.transform(orig_img).unsqueeze(0).to(self.pipeline.chest_expert.device)
-
-                if target_class and target_class in self.pipeline.chest_expert.class_names:
-                    c_idx = self.pipeline.chest_expert.class_names.index(target_class)
-                else:
-                    c_idx = None  # Highest predicted class
-
-                cam_res = compute_multilayer_gradcam(
-                    model=chest_model,
-                    input_tensor=x_tensor,
-                    original_image=orig_img,
-                    hook_layers=hook_layers,
-                    class_idx=c_idx,
-                    alpha=0.48,
-                    mode="layercam",
+                from grad_cam import (
+                    MultiLayerGradCAM as ChestGradCAM,
+                    project_to_original,
+                    overlay as chest_overlay,
+                    choose_crop,
+                    make_tensor,
                 )
-                overlay_pil = cam_res.overlay_pil
-                heatmap_pil = cam_res.heatmap_pil
-                layer_weights = cam_res.weights_dict
-                layer_overlays = cam_res.layer_overlays
-                grid_pil = cam_res.grid_pil
+
+                crop, crop_box, crop_source = choose_crop(orig_img)
+                size = 256
+                x_tensor = make_tensor(crop, size=size).to(self.pipeline.chest_expert.device)
+
+                extractor = ChestGradCAM(chest_model)
+                try:
+                    chest_model.zero_grad(set_to_none=True)
+                    logits = chest_model(x_tensor)
+                    probs_t = torch.softmax(logits, dim=1)[0]
+                    if target_class and target_class in self.pipeline.chest_expert.class_names:
+                        c_idx = self.pipeline.chest_expert.class_names.index(target_class)
+                    else:
+                        c_idx = int(torch.argmax(probs_t).item())
+
+                    logits[0, c_idx].backward()
+                    fused_model_cam, diagnostics, individual_maps = extractor.build_maps((size, size), mode="layercam")
+                finally:
+                    extractor.remove()
+
+                # Re-project to exact given image coordinates
+                full_cam = project_to_original(fused_model_cam, crop_box, orig_img.size)
+                overlay_np, heat_np = chest_overlay(orig_img, full_cam, alpha=0.48, threshold=0.18)
+                overlay_pil = Image.fromarray(overlay_np)
+                heatmap_pil = Image.fromarray(heat_np)
+
+                # Layer weights and overlays
+                grid_layer_info = []
+                for d in diagnostics:
+                    short_name = d["layer"].replace("backbone.", "")
+                    pct = round(d.get("fusion_weight", 0.0) * 100.0, 2)
+                    layer_weights[short_name] = pct
+                    l_map = individual_maps.get(d["layer"])
+                    if l_map is not None:
+                        l_full = project_to_original(l_map, crop_box, orig_img.size)
+                        l_ov, _ = chest_overlay(orig_img, l_full, alpha=0.48, threshold=0.18)
+                        layer_overlays[short_name] = Image.fromarray(l_ov)
+                        grid_layer_info.append((short_name, pct, l_full))
+
+                from .gradcam import build_projection_grid
+                grid_pil = build_projection_grid(orig_img, grid_layer_info[:4], overlay_pil)
 
                 if gradcam_dir:
                     out_d = Path(gradcam_dir)
@@ -255,41 +270,56 @@ class MedicalCTPredictor:
 
             # ---------------- Multi-Layer Grad-CAM for Brain CT ----------------
             elif anatomy == "BRAIN_CT" and self.pipeline.brain_expert.is_loaded:
-                brain_model = self.pipeline.brain_expert.predictor.model
-                if multi_layer:
-                    # Hook 4 residual stages of SE-ResNeXt-101
-                    hook_layers = [
-                        ("res_stage1 (low)", brain_model.model_ft.layer1[-1]),
-                        ("res_stage2 (mid)", brain_model.model_ft.layer2[-1]),
-                        ("res_stage3 (deep)", brain_model.model_ft.layer3[-1]),
-                        ("res_stage4 (top)", brain_model.model_ft.layer4[-1]),
-                    ]
+                predictor = self.pipeline.brain_expert.predictor
+
+                # Target class resolution
+                brain_labels = getattr(self.pipeline.brain_expert, "labels", ["any", "epidural", "intraparenchymal", "intraventricular", "subarachnoid", "subdural"])
+                if target_class and target_class in brain_labels:
+                    target_name = target_class
                 else:
-                    hook_layers = [("res_stage4 (top)", brain_model.model_ft.layer4[-1])]
+                    target_name = "auto"
 
-                # Prepare normalized tensor matching SE-ResNeXt
-                w0, h0 = orig_img.size
-                im_arr = np.array(orig_img).astype(np.float32) / 255.0
-                im_arr = cv2.resize(im_arr, (256, 256), interpolation=cv2.INTER_AREA)
-                mean = np.array([0.456, 0.456, 0.456], dtype=np.float32)
-                std = np.array([0.224, 0.224, 0.224], dtype=np.float32)
-                x_norm = (im_arr - mean) / std
-                x_tensor = torch.from_numpy(x_norm.transpose(2, 0, 1)).unsqueeze(0).float().to(self.pipeline.brain_expert.predictor.device)
-
-                cam_res = compute_multilayer_gradcam(
-                    model=brain_model,
-                    input_tensor=x_tensor,
-                    original_image=orig_img,
-                    hook_layers=hook_layers,
-                    class_idx=None,
-                    alpha=0.50,
-                    mode="layercam",
+                from rsna_ich_predict_gradcam import overlay_heatmap
+                brain_res = predictor.predict(
+                    str(img_p),
+                    target_class=target_name,
+                    mode="layercam" if multi_layer else "gradcam",
+                    threshold=0.22,
+                    apply_crop=True,
                 )
-                overlay_pil = cam_res.overlay_pil
-                heatmap_pil = cam_res.heatmap_pil
-                layer_weights = cam_res.weights_dict
-                layer_overlays = cam_res.layer_overlays
-                grid_pil = cam_res.grid_pil
+
+                cam_full = brain_res["fused_cam"]
+                overlay_bgr = brain_res["overlay_bgr"]
+                central_slice = brain_res["central_slice"]
+                crop_box = brain_res["crop_box_xywh"]
+                crop_x, crop_y, crop_w, crop_h = crop_box
+
+                # Convert overlay and heatmap to PIL Images
+                overlay_pil = Image.fromarray(cv2.cvtColor(overlay_bgr, cv2.COLOR_BGR2RGB))
+                heat_u8 = np.uint8(np.clip(cam_full, 0, 1) * 255)
+                heat_rgb = cv2.cvtColor(cv2.applyColorMap(heat_u8, cv2.COLORMAP_JET), cv2.COLOR_BGR2RGB)
+                heatmap_pil = Image.fromarray(heat_rgb)
+
+                # Individual layer projections and weights
+                diagnostics = brain_res.get("layers", [])
+                total_energy = sum(L.get("gradient_energy", 0) * L.get("activation_energy", 0) for L in diagnostics) + 1e-15
+                layer_weights = {
+                    L["layer"]: round((L.get("gradient_energy", 0) * L.get("activation_energy", 0)) / total_energy * 100, 2)
+                    for L in diagnostics
+                }
+
+                layer_maps = brain_res.get("layer_maps", [])
+                grid_layer_info = []
+                for name, m in layer_maps:
+                    l_crop = cv2.resize(m, (crop_w, crop_h), interpolation=cv2.INTER_LINEAR)
+                    l_full = np.zeros_like(cam_full)
+                    l_full[crop_y : crop_y + crop_h, crop_x : crop_x + crop_w] = l_crop
+                    l_bgr = overlay_heatmap(central_slice, l_full, alpha=0.5, threshold=0.22)
+                    layer_overlays[name] = Image.fromarray(cv2.cvtColor(l_bgr, cv2.COLOR_BGR2RGB))
+                    grid_layer_info.append((name, layer_weights.get(name, 25.0), l_full))
+
+                from .gradcam import build_projection_grid
+                grid_pil = build_projection_grid(orig_img, grid_layer_info, overlay_pil)
 
                 if gradcam_dir:
                     out_d = Path(gradcam_dir)
@@ -309,6 +339,8 @@ class MedicalCTPredictor:
                     for l_name, l_img in layer_overlays.items():
                         c_name = re.sub(r"[^a-zA-Z0-9_]", "_", l_name).strip("_")
                         l_path = out_d / f"brain_layer_{c_name}.png"
+                        l_img.save(l_path)
+                        result["gradcam_files"][f"layer_{c_name}"] = str(l_path)
                         l_img.save(l_path)
                         result["gradcam_files"][f"layer_{c_name}"] = str(l_path)
 

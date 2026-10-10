@@ -10,9 +10,19 @@ import torch.nn as nn
 from torchvision import models, transforms
 from PIL import Image
 
-# Find default model in models/router/best_router.pt relative to project root
-BASE_DIR = Path(__file__).resolve().parent.parent
-DEFAULT_ROUTER_PATH = BASE_DIR / "models" / "router" / "best_router.pt"
+# Find default model relative to project root or ct_anatomy_project
+CUR_DIR = Path(__file__).resolve().parent
+BASE_DIR = CUR_DIR.parent
+WORKSPACE_ROOT = BASE_DIR.parent if (BASE_DIR.parent / "RSNA2019_Intracranial-Hemorrhage-Detection").exists() else BASE_DIR
+
+CANDIDATE_ROUTER_PATHS = [
+    BASE_DIR / "models" / "router" / "best_router.pt",
+    BASE_DIR / "checkpoints" / "best_router.pt",
+    WORKSPACE_ROOT / "models" / "router" / "best_router.pt",
+    WORKSPACE_ROOT / "ct_anatomy_project" / "models" / "router" / "best_router.pt",
+    WORKSPACE_ROOT / "ct_anatomy_project" / "checkpoints" / "best_router.pt",
+]
+DEFAULT_ROUTER_PATH = next((p for p in CANDIDATE_ROUTER_PATHS if p.exists()), CANDIDATE_ROUTER_PATHS[0])
 
 # ImageNet normalization used during training
 NORM_MEAN = [0.485, 0.456, 0.406]
@@ -39,10 +49,10 @@ class CTAnatomyRouter:
     def __init__(self, model_path: Union[str, Path] = DEFAULT_ROUTER_PATH, device: Optional[str] = None):
         self.model_path = Path(model_path)
         if not self.model_path.exists():
-            # Fallback search if moved
-            alt_path = BASE_DIR / "best_router.pt"
-            if alt_path.exists():
-                self.model_path = alt_path
+            for cand in CANDIDATE_ROUTER_PATHS:
+                if cand.exists():
+                    self.model_path = cand
+                    break
             else:
                 raise FileNotFoundError(f"Router checkpoint not found at: {self.model_path}")
 

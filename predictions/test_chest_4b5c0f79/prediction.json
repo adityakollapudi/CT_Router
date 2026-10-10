@@ -1,5 +1,5 @@
 {
-  "image_path": "C:\\Users\\adity\\Downloads\\ct_anatomy_router_output\\samples\\test_chest.png",
+  "image_path": "C:\\Users\\adity\\Downloads\\ct_anatomy_router_output\\test_chest.png",
   "router": {
     "prediction": "CHEST_CT",
     "confidence": 1.0,
@@ -10,7 +10,7 @@
     },
     "status": "ROUTED",
     "uncertain": 0,
-    "image_path": "C:\\Users\\adity\\Downloads\\ct_anatomy_router_output\\samples\\test_chest.png"
+    "image_path": "C:\\Users\\adity\\Downloads\\ct_anatomy_router_output\\test_chest.png"
   },
   "routing_action": "Dispatched to Chest CT Expert (COVID-19 / Pneumonia Detection)",
   "expert_result": {
@@ -38,9 +38,9 @@
       "COVID-19"
     ],
     "clinical_summary": "Features consistent with viral pneumonia / COVID-19 pattern.",
-    "image_path": "C:\\Users\\adity\\Downloads\\ct_anatomy_router_output\\samples\\test_chest.png"
+    "image_path": "C:\\Users\\adity\\Downloads\\ct_anatomy_router_output\\test_chest.png"
   },
-  "latency_seconds": 0.072,
+  "latency_seconds": 0.184,
   "gradcam_files": {
     "overlay": "C:\\Users\\adity\\Downloads\\ct_anatomy_router_output\\predictions\\test_chest_4b5c0f79\\chest_gradcam_overlay.png",
     "heatmap": "C:\\Users\\adity\\Downloads\\ct_anatomy_router_output\\predictions\\test_chest_4b5c0f79\\chest_gradcam_heatmap.png",

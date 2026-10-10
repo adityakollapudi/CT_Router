@@ -31,7 +31,12 @@ COLOR_ALERT_FG = "#ef4444"     # Abnormal badge text
 COLOR_SAFE_BG = "#052e16"      # Normal badge background
 COLOR_SAFE_FG = "#22c55e"      # Normal badge text
 
-PREVIEWS_DIR = Path(__file__).resolve().parent.parent / "predictions"
+CUR_DIR = Path(__file__).resolve().parent
+BASE_DIR = CUR_DIR.parent
+PREVIEWS_DIR = BASE_DIR / "predictions"
+if not PREVIEWS_DIR.exists() and (BASE_DIR.parent / "predictions").exists():
+    PREVIEWS_DIR = BASE_DIR.parent / "predictions"
+PREVIEWS_DIR.mkdir(parents=True, exist_ok=True)
 
 
 class MedicalCTGUI(tk.Tk):

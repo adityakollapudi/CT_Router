@@ -1,6 +1,0 @@
-[submodule "Covid19-CT-Scan--Detection"]
-	path = Covid19-CT-Scan--Detection
-	url = https://github.com/adityakollapudi/Covid19-CT-Scan--Detection.git
-[submodule "RSNA2019_Intracranial-Hemorrhage-Detection"]
-	path = RSNA2019_Intracranial-Hemorrhage-Detection
-	url = https://github.com/adityakollapudi/RSNA2019_Intracranial-Hemorrhage-Detection.git

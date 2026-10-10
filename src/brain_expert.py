@@ -14,8 +14,10 @@ import cv2
 import torch
 from PIL import Image
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-RSNA_DIR = BASE_DIR / "RSNA2019_Intracranial-Hemorrhage-Detection"
+CUR_DIR = Path(__file__).resolve().parent
+BASE_DIR = CUR_DIR.parent
+WORKSPACE_ROOT = BASE_DIR.parent if (BASE_DIR.parent / "RSNA2019_Intracranial-Hemorrhage-Detection").exists() else BASE_DIR
+RSNA_DIR = WORKSPACE_ROOT / "RSNA2019_Intracranial-Hemorrhage-Detection"
 
 # Add RSNA repo to sys.path so we can import its native modules
 if str(RSNA_DIR) not in sys.path:
@@ -24,6 +26,10 @@ if str(RSNA_DIR) not in sys.path:
 # Possible checkpoint paths
 CANDIDATE_CHECKPOINTS = [
     BASE_DIR / "models" / "brain" / "model_epoch_best_4.pth",
+    BASE_DIR / "checkpoints" / "model_epoch_best_4.pth",
+    WORKSPACE_ROOT / "models" / "brain" / "model_epoch_best_4.pth",
+    WORKSPACE_ROOT / "ct_anatomy_project" / "models" / "brain" / "model_epoch_best_4.pth",
+    WORKSPACE_ROOT / "ct_anatomy_project" / "checkpoints" / "model_epoch_best_4.pth",
     RSNA_DIR / "model_epoch_best_4.pth",
 ]
 
@@ -51,6 +57,7 @@ class BrainExpertModel:
         self.device = device if device else None
         self.predictor = None
         self.is_loaded = False
+        self.labels = list(LABELS)
 
         if self.checkpoint_path:
             self._load_model()

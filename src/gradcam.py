@@ -40,6 +40,30 @@ class GradCAMOutput:
         return (self.fused_norm, self.overlay_pil, self.heatmap_pil, self.weights_dict)[idx]
 
 
+def extract_anatomical_mask(orig_img: Union[Image.Image, np.ndarray]) -> np.ndarray:
+    """Generates an anatomical tissue mask to suppress background air and couch artifacts."""
+    if isinstance(orig_img, Image.Image):
+        arr = np.array(orig_img.convert("RGB"))
+    else:
+        arr = orig_img
+    gray = cv2.cvtColor(arr, cv2.COLOR_RGB2GRAY)
+    
+    # Threshold body region with morphological closing
+    _, thresh = cv2.threshold(gray, 18, 255, cv2.THRESH_BINARY)
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7, 7))
+    closed = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel, iterations=2)
+    
+    # Extract largest contour (patient anatomy)
+    cnts, _ = cv2.findContours(closed, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    if cnts:
+        c = max(cnts, key=cv2.contourArea)
+        mask = np.zeros_like(gray, dtype=np.uint8)
+        cv2.drawContours(mask, [c], -1, 255, -1)
+        mask = cv2.dilate(mask, kernel, iterations=1)
+        return mask.astype(np.float32) / 255.0
+    return np.ones_like(gray, dtype=np.float32)
+
+
 def build_projection_grid(
     orig_pil: Image.Image,
     layer_maps: List[Tuple[str, float, np.ndarray]],
@@ -113,7 +137,7 @@ def compute_multilayer_gradcam(
     hook_layers: List[Tuple[str, nn.Module]],
     class_idx: Optional[int] = None,
     alpha: float = 0.48,
-    mode: str = "layercam",
+    mode: str = "hybrid",
 ) -> GradCAMOutput:
     """Collects gradients across multiple layers, projects them, and fuses into a single CAM.
 
@@ -124,7 +148,7 @@ def compute_multilayer_gradcam(
         hook_layers: List of (layer_name, module) pairs to hook across the network hierarchy
         class_idx: Target class index to explain (None = highest predicted class)
         alpha: Heatmap blend transparency [0.0, 1.0]
-        mode: 'layercam' (element-wise positive projection) or 'gradcam' (pooled)
+        mode: 'hybrid' (blended spatial + channel projection), 'layercam', or 'gradcam'
 
     Returns:
         GradCAMOutput containing:
@@ -141,6 +165,7 @@ def compute_multilayer_gradcam(
         orig_pil = original_image.convert("RGB")
 
     w_orig, h_orig = orig_pil.size
+    tissue_mask = extract_anatomical_mask(orig_pil)
 
     records = {}
     handles = []
@@ -188,17 +213,25 @@ def compute_multilayer_gradcam(
             # 1. Project gradient and activation
             if mode == "layercam":
                 # Element-wise positive gradient projection (Layer-CAM)
-                # w_pos = ReLU(g), cam = ReLU( sum_c( w_pos * a ) )
                 cam_t = F.relu((F.relu(g) * a).sum(dim=1, keepdim=True))
-            else:
+            elif mode == "gradcam":
                 # Global average pooled Grad-CAM
                 weights = g.mean(dim=(2, 3), keepdim=True)
                 cam_t = F.relu((weights * a).sum(dim=1, keepdim=True))
+            else:
+                # Hybrid projection: combines channel-wise positive GAP with spatial element-wise projection
+                w_pos = g.clamp(min=0).mean(dim=(2, 3), keepdim=True)
+                cam_gap = F.relu((w_pos * a).sum(dim=1, keepdim=True))
+                cam_spatial = F.relu((F.relu(g) * a).sum(dim=1, keepdim=True))
+                cam_t = 0.5 * cam_gap + 0.5 * cam_spatial
 
             # 2. Interpolate layer map to target image resolution
             cam_t = F.interpolate(cam_t, size=(h_orig, w_orig), mode="bilinear", align_corners=False)
             cam_np = cam_t[0, 0].float().cpu().numpy()
             cam_np = np.maximum(0, cam_np)
+
+            # Apply anatomical tissue mask to suppress couch/air artifacts
+            cam_np = cam_np * tissue_mask
 
             diff = cam_np.max() - cam_np.min()
             if diff > 1e-12:

@@ -15,13 +15,21 @@ import torch.nn as nn
 from torchvision import models, transforms
 from PIL import Image
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+CUR_DIR = Path(__file__).resolve().parent
+BASE_DIR = CUR_DIR.parent
+WORKSPACE_ROOT = BASE_DIR.parent if (BASE_DIR.parent / "Covid19-CT-Scan--Detection").exists() else BASE_DIR
+COVID_DIR = WORKSPACE_ROOT / "Covid19-CT-Scan--Detection"
 
 # Check potential checkpoint locations
 CANDIDATE_CHECKPOINTS = [
     BASE_DIR / "models" / "chest" / "best.pt",
-    BASE_DIR / "Covid19-CT-Scan--Detection" / "covidx_ct_results" / "checkpoints" / "best.pt",
-    BASE_DIR / "Covid19-CT-Scan--Detection" / "covidx_ct_results" / "checkpoints" / "last.pt",
+    BASE_DIR / "checkpoints" / "best_chest.pt",
+    BASE_DIR / "checkpoints" / "best.pt",
+    WORKSPACE_ROOT / "models" / "chest" / "best.pt",
+    WORKSPACE_ROOT / "ct_anatomy_project" / "models" / "chest" / "best.pt",
+    WORKSPACE_ROOT / "ct_anatomy_project" / "checkpoints" / "best_chest.pt",
+    COVID_DIR / "covidx_ct_results" / "checkpoints" / "best.pt",
+    COVID_DIR / "covidx_ct_results" / "checkpoints" / "last.pt",
 ]
 
 CLASS_NAMES = ["Normal", "Pneumonia", "COVID-19"]
