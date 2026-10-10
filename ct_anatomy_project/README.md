@@ -128,8 +128,11 @@ git lfs pull
 
 ### 3. Install Dependencies
 ```bash
+# Recommended: Install PyTorch with your desired hardware backend (CUDA 11.8/12.1 or CPU)
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118  # or cpu
-pip install opencv-python pillow numpy timm
+
+# Install all remaining dependencies
+pip install -r requirements.txt
 ```
 
 ---
